@@ -219,15 +219,20 @@ class video_handler(object):
         
         # calculate number of frames to analyze and allocate space for
         # temporary RMS variable
-        num_frames = int(np.ceil((t_end - t_start)*fps))        
+        if downsample:
+            num_frames = int(np.ceil(t_end - t_start))
+        else:
+            num_frames = int(np.ceil((t_end - t_start)*fps))        
         RMS_array = np.zeros(num_frames)
         
         # set up description for tqdm
         desc = 'Calculating RMS in \'{0}\''.format(self.metadata['title'])
+        total = int(np.ceil(t_end-t_start)*fps)
         
-        
+        # initialize downsample counter
+        n = 0
         for i, frame in tqdm(enumerate(self.clip.iter_frames()), 
-                             ascii=True, desc=desc, total=num_frames):
+                             ascii=True, desc=desc, total=total):
             # calculate time
             time = i/fps
             # is this frame within the time interval selected?
@@ -252,8 +257,11 @@ class video_handler(object):
             if frames[1] == []:
                 continue
             else:
-                RMS_array[i] = video_handler.RMS(frames[0], frames[1],
+                RMS_array[n] = video_handler.RMS(frames[0], frames[1],
                          norm_flag = norm_flag)
+            
+            # increment successful rms counter
+            n += 1
                   
         # convolve data with step filter data if smoothing is set
         if smooth:
@@ -443,10 +451,6 @@ class video_handler(object):
             # remove peak and time bin surrounding it
             lbound = int(data[0,ind] - d_ind)
             ubound = int(data[0,ind] + d_ind)
-            # do not store index if it would result in extending subclips
-#            # past the ends of the video
-#            if lbound or ubound < 0:
-#                continue
             #store these in indices
             indices[i] = data[0,ind]
             # declare list for data to del
@@ -479,7 +483,8 @@ class video_handler(object):
 #
 ###############################################################################
 # path to test video
-vid_path = '3hourfish.mp4'
+vid_path = '/home/jon/Research/Baccus Rotation/Stimuli/videos/3hourfish.mp4'
 # intantiate vhandler object
 obj = video_handler(vid_path, getRMS = True)
-#%% test peaks
+#%% use get_subclips
+obj.get_subclips('output', 10, 900)
