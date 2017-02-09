@@ -317,7 +317,8 @@ class video_handler(object):
             # create subclip centered at time
             subclip = self.clip.subclip(time - vid_length/2,
                                         time + vid_length/2)
-            subclip.write_videofile(filename + '_{0}.mp4'.format(i+1))
+            subclip.write_videofile(filename + '_{0}.mp4'.format(i+1),
+                                    codec = 'mpeg4')
         
             
         
