@@ -264,7 +264,7 @@ class video_handler(object):
             if not downsample:
                 smooth *= fps
                 
-            step = np.ones(smooth*fps)
+            step = np.ones(int(smooth*fps))
             RMS_array = np.convolve(RMS_array, step, mode='same')
             
         # set self.RMS
@@ -422,7 +422,7 @@ class video_handler(object):
             #calculate number of indices within spacing
             time_bins = sampling_rate*spacing
             #d_ind = divide by two to get plus/minus bound
-            d_ind = time_bins/2
+            d_ind = int(time_bins/2)
         else:
             d_ind = 0
         
@@ -432,22 +432,21 @@ class video_handler(object):
         # create np.array of data values and indices
         data = np.array([ 
                 [i for i in range(len(array))], array ])
-        
+        # prune data to remove edges
+        if d_ind != 0:
+            data = data[:,d_ind:-d_ind]
 
         # loop until the desired number of peaks are chosen
         for i in range(numpeaks):
-            # get index at highest array value, excluding edges
-            if d_ind == 0:
-                ind = np.argmax(data[1,:])
-            else:
-                ind = np.argmax(data[1,d_ind:-d_ind])
+            # get index at highest array value
+            ind = np.argmax(data[1,:])
             # remove peak and time bin surrounding it
-            lbound = int(indices[i] - d_ind)
-            ubound = int(indices[i] + d_ind)
+            lbound = int(data[0,ind] - d_ind)
+            ubound = int(data[0,ind] + d_ind)
             # do not store index if it would result in extending subclips
-            # past the ends of the video
-            if lbound or ubound < 0:
-                continue
+#            # past the ends of the video
+#            if lbound or ubound < 0:
+#                continue
             #store these in indices
             indices[i] = data[0,ind]
             # declare list for data to del
@@ -480,7 +479,7 @@ class video_handler(object):
 #
 ###############################################################################
 # path to test video
-vid_path = '/home/jon/Research/Baccus Rotation/videos/3hourfish.mp4'
+vid_path = '/home/jon/Research/Baccus Rotation/videos/test.mp4'
 # intantiate vhandler object
 obj = video_handler(vid_path, getRMS = True)
 #%% test peaks
