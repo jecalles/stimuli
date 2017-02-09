@@ -405,6 +405,8 @@ class video_handler(object):
                      ['spacing'] = float; time length of bins in sec
         
         
+        NOTE: Added functionality prevents peaks from returning timestamps
+        that would cause clips to extend beyond beginning or end of video.
         '''
         if type(array) == np.ndarray:
             pass
@@ -430,16 +432,23 @@ class video_handler(object):
         data = np.array([ 
                 [i for i in range(len(array))], array ])
         
+
         # loop until the desired number of peaks are chosen
         for i in range(numpeaks):
-            # get index at highest array value
-            ind = np.argmax(data[1,:])
-            #store these in indices
-           # val = data[1,ind]
-            indices[i] = data[0,ind]
+            # get index at highest array value, excluding edges
+            if d_ind == 0:
+                ind = np.argmax(data[1,:])
+            else:
+                ind = np.argmax(data[1,d_ind:-d_ind])
             # remove peak and time bin surrounding it
             lbound = int(indices[i] - d_ind)
             ubound = int(indices[i] + d_ind)
+            # do not store index if it would result in extending subclips
+            # past the ends of the video
+            if lbound or ubound < 0:
+                continue
+            #store these in indices
+            indices[i] = data[0,ind]
             # declare list for data to del
             to_del = []
             for j in range(len(data[0,:])):
