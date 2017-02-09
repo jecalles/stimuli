@@ -479,3 +479,21 @@ class video_handler(object):
 #                                   TEST SCRIPT
 #
 ###############################################################################
+# path to test video
+vid_path = '/home/jon/Research/Baccus Rotation/videos/3hourfish.mp4'
+# intantiate vhandler object
+obj = video_handler(vid_path, getRMS = True)
+#%% test peaks
+if obj.metadata['RMS Downsampled']:
+    fps = 1.0
+elif obj.metadata['framerate']:
+    fps = obj.metadata['framerate']
+else:
+    print('framerate failed')
+
+overlap = False
+# get peaks in RMS values
+if overlap:
+    peaks = video_handler.peaks(obj.RMS, 10)
+else:
+    peaks = video_handler.peaks(obj.RMS, 10, 900, fps)
